@@ -47,6 +47,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip pipenv setuptools wheel
+
+          make init
       - name: Release
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -55,10 +57,8 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          make init
           pipenv run python setup.py sdist bdist_wheel --universal
-          pipenv run twine upload -r testpypi dist/*
-
+          pipenv run twine upload -r testpypi  --verbose dist/*
 
 #          make release
 
