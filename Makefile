@@ -50,7 +50,7 @@ format: ## Autoformat the code.
 	pipenv run black --safe . $(EXTRA_FLAGS)
 
 release: init clean-lite format typecheck git-pull ## Bump version and release
-	pipenv clean ; rm -rf Pipfile.lock
+	#pipenv clean ; rm -rf Pipfile.lock
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
 	# EX:  0.3.0-dev  ->  0.3.0
