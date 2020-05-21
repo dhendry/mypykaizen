@@ -4,15 +4,15 @@ but which does not force you to fix them all.
 
 Developed against mypy 0.761
 """
+import gzip
 import os
 import re
 import subprocess
 import sys
-import gzip
 from dataclasses import dataclass
 from typing import List, Optional
 
-from dataclasses_json import dataclass_json # type:ignore
+from dataclasses_json import dataclass_json  # type:ignore
 
 ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json.gz"
 
@@ -179,6 +179,7 @@ def main() -> None:
     print("mypykaizen: DONE, but try and clean some of these problems up :)")
     assert total_errors + files_in_error > 0  # Exit on success earlier
     exit(0)
+
 
 if __name__ == "__main__":
     main()
