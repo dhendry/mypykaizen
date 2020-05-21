@@ -71,7 +71,7 @@ release: init clean-lite format typecheck git-pull ## Bump version and release
 	#git push origin master --tags
 
 	# Deploy to the repo
-	pipenv run twine upload --repository testpypi dist/*
+	TWINE_USERNAME=$(TWINE_USERNAME) TWINE_PASSWORD=$(TWINE_PASSWORD) pipenv run twine upload -r testpypi dist/*
 
 # Self-Documented Makefile see https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help: ## When you just dont know what to do with your life, look for inspiration here!
