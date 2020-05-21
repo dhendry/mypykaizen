@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+# Manage dependencies via setup.py
+# An implication of this is that this repo should never have a Pipfile.lock
+# The package name here is just a random string and does not matter (other than being random)
+e2co2f9tay0 = {path = ".",editable = true}
+
+[dev-packages]
+coverage = "*"
+pytest = "*"
+pytest-cov = "*"
+bump2version = "*"
+black = "==19.10b0"
+twine = "*"
+
+[requires]
+python_version = "3.7"

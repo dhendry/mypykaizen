@@ -1,0 +1,6 @@
+root = true
+
+# Primary code format controlled by black.
+# line length being used here to adjust visual guides in IDEs.
+[*.py]
+max_line_length=110
