@@ -45,7 +45,7 @@ format: ## Autoformat the code.
 	source $(shell pipenv --venv)/bin/activate && isort --atomic -rc -y . $(EXTRA_FLAGS) && deactivate
 	pipenv run black --safe . $(EXTRA_FLAGS)
 
-release: format typecheck git-pull clean init clean-lite setup-docker ## Bump version and release
+release: format typecheck git-pull init clean-lite ## Bump version and release
 	pipenv clean ; rm -rf Pipfile.lock
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
