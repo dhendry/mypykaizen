@@ -9,10 +9,10 @@ import os
 import re
 import subprocess
 import sys
-import mypy.version
 from dataclasses import dataclass
 from typing import List, Optional
 
+import mypy.version
 from dataclasses_json import dataclass_json  # type:ignore
 
 ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json"
@@ -22,6 +22,7 @@ ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json"
 @dataclass
 class AllowableErrors:
     """Class to keep track of the allowable errors"""
+
     file_version: str = "v1"
     mypy_version: Optional[str] = None
 
