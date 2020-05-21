@@ -32,13 +32,14 @@ class AllowableErrors:
     @classmethod
     def load(cls) -> "AllowableErrors":
         if os.path.isfile(ALLOWABLE_ERRORS_FILE_NAME):
-            with gzip.open(ALLOWABLE_ERRORS_FILE_NAME, "rt") as f:
-                return AllowableErrors.from_json(f.read())  # type: ignore
+            with gzip.open(ALLOWABLE_ERRORS_FILE_NAME, "rb") as f:
+                return AllowableErrors.from_json(f.read())
         return AllowableErrors()
 
     def save(self) -> None:
-        with gzip.open(ALLOWABLE_ERRORS_FILE_NAME, "wt") as f:
-            f.write(self.to_json(indent=4))  # type:ignore
+        # Explicitly set the mtime parameter to ensure the gzip output is deterministic
+        with gzip.GzipFile(ALLOWABLE_ERRORS_FILE_NAME, "wb", mtime=42) as f:
+            f.write(self.to_json(indent=4).encode())
 
 
 def main() -> None:
