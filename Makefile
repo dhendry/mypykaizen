@@ -5,6 +5,7 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
 .PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help
+.EXPORT_ALL_VARIABLES:
 
 init: clean-lite  ## Initialize or update the local environment using pipenv.
 	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
@@ -46,6 +47,8 @@ format: ## Autoformat the code.
 	pipenv run black --safe . $(EXTRA_FLAGS)
 
 release: init clean-lite format typecheck git-pull ## Bump version and release
+	echo "$TWINE_USERNAME"
+
 	pipenv clean ; rm -rf Pipfile.lock
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
