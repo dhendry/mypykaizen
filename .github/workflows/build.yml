@@ -55,9 +55,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-#          pipenv run python setup.py sdist bdist_wheel --universal
-#          pipenv run twine upload -r testpypi  --verbose dist/*
-
           make release
 
 #        # There should be a better way...
