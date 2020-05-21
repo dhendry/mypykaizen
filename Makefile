@@ -50,7 +50,7 @@ format: ## Autoformat the code.
 	pipenv run black --safe . $(EXTRA_FLAGS)
 
 release: init clean-lite format typecheck git-pull ## Bump version and release
-	echo "USERNAME $(TWINE_USERNAME)"
+	echo "USERNAME$(TWINE_USERNAME)"
 	#pipenv clean ; rm -rf Pipfile.lock
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
