@@ -27,6 +27,6 @@ jobs:
     - name: Format
       run: |
         make format EXTRA_FLAGS=--check
-    - name: Format
+    - name: Typecheck
       run: |
-        make typecheck
+        make typecheck git-assert-clean

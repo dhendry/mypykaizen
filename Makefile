@@ -4,7 +4,7 @@ SHELL := /bin/bash
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
-.PHONY: init git-pull clean-lite clean typecheck format release help
+.PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help
 
 init: clean-lite  ## Initialize or update the local environment using pipenv.
 	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
@@ -12,11 +12,11 @@ init: clean-lite  ## Initialize or update the local environment using pipenv.
 	# Note that since this is a library, Pipfile.lock is not useful and non-dev dependencies are managed through setup.py
 	pipenv install --dev --skip-lock
 
-
-git-pull: ## Check that things are clean locally then  git pull origin master
+git-assert-clean: ## Check that there are no uncommitted changes
 	if [[ ! -z "$$(git status --porcelain)" ]] ; then echo "Git not in a clean state" && exit 1 ; fi
-	if [[ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]] ; then echo "Not on master" && exit 1 ; fi
 
+git-pull: git-assert-clean ## Check that things are clean locally then  git pull origin master
+	if [[ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]] ; then echo "Not on master" && exit 1 ; fi
 	git pull origin master
 
 clean-lite: ## Remove the dist directory and the Pipfile.lock since we dont use that

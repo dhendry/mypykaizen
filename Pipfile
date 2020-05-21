@@ -15,6 +15,7 @@ pytest = "*"
 pytest-cov = "*"
 bump2version = "*"
 black = "==19.10b0"
+isort = "*"
 twine = "*"
 
 [requires]
