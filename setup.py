@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="mypykaizen",
-    version="0.6.0",
+    version="0.7.0-dev",
     license="MIT",
     packages=find_packages(exclude=["tests"]),
     author="Dan Hendry",
