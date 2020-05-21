@@ -5,8 +5,8 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
 .PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help
-.EXPORT_ALL_VARIABLES:
 
+.EXPORT_ALL_VARIABLES:
 TWINE_USERNAME := $(TWINE_USERNAME)
 TWINE_PASSWORD := $(TWINE_PASSWORD)
 
@@ -70,7 +70,8 @@ release: init clean-lite format typecheck git-pull ## Bump version and release
 	git push origin master --tags
 
 	# Deploy to the repo
-	pipenv run twine upload -r testpypi dist/*
+	@#pipenv run twine upload -r testpypi dist/*
+	pipenv run twine upload dist/*
 
 # Self-Documented Makefile see https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help: ## When you just dont know what to do with your life, look for inspiration here!
