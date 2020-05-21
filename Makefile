@@ -7,6 +7,9 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 .PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help
 .EXPORT_ALL_VARIABLES:
 
+TWINE_USERNAME := $(TWINE_USERNAME)
+TWINE_PASSWORD := $(TWINE_PASSWORD)
+
 init: clean-lite  ## Initialize or update the local environment using pipenv.
 	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
 

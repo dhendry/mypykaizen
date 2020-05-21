@@ -55,10 +55,10 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          # There should be a better way...
-          echo "[testpypi]" > ~/.pypirc
-          echo "username = $TWINE_USERNAME" >> ~/.pypirc
-          echo "password = $TWINE_PASSWORD" >> ~/.pypirc
 
           make release
 
+#        # There should be a better way...
+#        echo "[testpypi]" > ~/.pypirc
+#        echo "username = $TWINE_USERNAME" >> ~/.pypirc
+#        echo "password = $TWINE_PASSWORD" >> ~/.pypirc
