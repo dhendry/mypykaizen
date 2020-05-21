@@ -68,7 +68,7 @@ release: init clean-lite format typecheck git-pull ## Bump version and release
 	pipenv run bumpversion --no-tag minor
 
 	# Push the tags back to master - main reason this is being done from within the script is so the --tags is not forgotten
-	git push origin master --tags
+	#git push origin master --tags
 
 	# Deploy to the repo
 	pipenv run twine upload --repository testpypi dist/*
