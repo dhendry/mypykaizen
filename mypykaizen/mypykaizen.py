@@ -2,25 +2,28 @@
 Wrapper around mypy which prevents the number of typecheck errors from increasing
 but which does not force you to fix them all.
 
-Developed against mypy 0.761
+Developed against mypy 0.770
 """
-import gzip
+import json
 import os
 import re
 import subprocess
 import sys
+import mypy.version
 from dataclasses import dataclass
 from typing import List, Optional
 
 from dataclasses_json import dataclass_json  # type:ignore
 
-ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json.gz"
+ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json"
 
 
 @dataclass_json
 @dataclass
 class AllowableErrors:
     """Class to keep track of the allowable errors"""
+    file_version: str = "v1"
+    mypy_version: Optional[str] = None
 
     # TODO: Consider updating this to be aware of the -p parameter (what mypy is
     #  checking) and possibly other arguments as well
@@ -32,14 +35,16 @@ class AllowableErrors:
     @classmethod
     def load(cls) -> "AllowableErrors":
         if os.path.isfile(ALLOWABLE_ERRORS_FILE_NAME):
-            with gzip.open(ALLOWABLE_ERRORS_FILE_NAME, "rb") as f:
-                return AllowableErrors.from_json(f.read())
+            try:
+                with open(ALLOWABLE_ERRORS_FILE_NAME, "rt") as f:
+                    return AllowableErrors.from_json(f.read())
+            except json.decoder.JSONDecodeError:
+                print("mypykaizen: Failed to decode errors file! Continuing any way")
         return AllowableErrors()
 
     def save(self) -> None:
-        # Explicitly set the mtime parameter to ensure the gzip output is deterministic
-        with gzip.GzipFile(ALLOWABLE_ERRORS_FILE_NAME, "wb", mtime=42) as f:
-            f.write(self.to_json(indent=4).encode())
+        with open(ALLOWABLE_ERRORS_FILE_NAME, "wt") as f:
+            f.write(self.to_json(indent=4))
 
 
 def main() -> None:
@@ -66,6 +71,15 @@ def main() -> None:
 
     print()
     allowable_errors = AllowableErrors.load()
+    needs_save = False
+
+    if mypy.version.__version__ != allowable_errors.mypy_version:
+        print()
+        print(f"mypykaizen: mypy version change - saved data from {allowable_errors.mypy_version}")
+        print(f"            current version is {mypy.version.__version__}")
+        print()
+        allowable_errors.mypy_version = mypy.version.__version__
+        needs_save = True
 
     output_lines = result.stdout.splitlines()
     last_line = output_lines[-1]
@@ -96,7 +110,6 @@ def main() -> None:
     files_in_error = int(fail_match.group("files"))
 
     # Now check and do a comparison:
-    needs_save = False
     errors_increased = False
 
     # Check total errors:
