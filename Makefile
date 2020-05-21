@@ -50,8 +50,7 @@ format: ## Autoformat the code.
 	pipenv run black --safe . $(EXTRA_FLAGS)
 
 release: init clean-lite format typecheck git-pull ## Bump version and release
-	echo "USERNAME$(TWINE_USERNAME)"
-	#pipenv clean ; rm -rf Pipfile.lock
+	pipenv clean ; rm -rf Pipfile.lock
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
 	# EX:  0.3.0-dev  ->  0.3.0
@@ -68,10 +67,10 @@ release: init clean-lite format typecheck git-pull ## Bump version and release
 	pipenv run bumpversion --no-tag minor
 
 	# Push the tags back to master - main reason this is being done from within the script is so the --tags is not forgotten
-	#git push origin master --tags
+	git push origin master --tags
 
 	# Deploy to the repo
-	TWINE_USERNAME=$(TWINE_USERNAME) TWINE_PASSWORD=$(TWINE_PASSWORD) pipenv run twine upload -r testpypi dist/*
+	pipenv run twine upload -r testpypi dist/*
 
 # Self-Documented Makefile see https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help: ## When you just dont know what to do with your life, look for inspiration here!
