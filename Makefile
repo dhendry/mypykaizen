@@ -4,7 +4,7 @@ SHELL := /bin/bash
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
-.PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help
+.PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help test
 
 .EXPORT_ALL_VARIABLES:
 TWINE_USERNAME := $(TWINE_USERNAME)
@@ -48,6 +48,9 @@ format: ## Autoformat the code.
 	@# https://github.com/timothycrosley/isort/issues/725
 	source $(shell pipenv --venv)/bin/activate && isort --atomic -rc -y . $(EXTRA_FLAGS) && deactivate
 	pipenv run black --safe . $(EXTRA_FLAGS)
+
+test: ## Run tests!
+	pipenv run pytest -v tests/
 
 release: init clean-lite format typecheck git-pull ## Bump version and release
 	pipenv clean ; rm -rf Pipfile.lock
