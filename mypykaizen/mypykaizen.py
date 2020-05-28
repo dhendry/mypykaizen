@@ -10,12 +10,14 @@ import re
 import subprocess
 import sys
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Pattern
 
 import mypy.version
 from dataclasses_json import dataclass_json  # type:ignore
 
 ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json"
+LINE_SANITIZATION_PATTERN: Pattern[str] = re.compile(r"note: .* defined here$")
+WINDOWS_PATH_START: Pattern[str] = re.compile(r"^[A-Za-z]\:\\")
 
 
 @dataclass_json
@@ -46,6 +48,45 @@ class AllowableErrors:
     def save(self) -> None:
         with open(ALLOWABLE_ERRORS_FILE_NAME, "wt") as f:
             f.write(self.to_json(indent=4))
+
+
+def sanitize_output_lines(output_lines: List[str]) -> List[str]:
+    """
+    Strips output lines from the file that aren't useful / lead to issues with
+    determinism
+    """
+
+    def _sanitize_line(line: str) -> Optional[str]:
+        is_windows_prefixed = bool(WINDOWS_PATH_START.match(line))
+        if is_windows_prefixed:
+            splitline = line.split(":", maxsplit=2)
+            if len(splitline) < 3:
+                print("Unexpected input line", line)
+                return line
+            drive_prefix, path, trailing = splitline
+            path = f"{drive_prefix}:{path}"
+        else:
+            splitline = line.split(":", maxsplit=1)
+
+            if len(splitline) < 2:
+                print("Unexpected input line", line)
+                return line
+            path, trailing = splitline
+
+        # Normalize the path to a POSIX path standard, this _should_ provide compatibility
+        # with windows machines
+        if os.altsep is not None:
+            # This _should_ replace "\\" with "/" on windows systems
+            # For reference: https://docs.python.org/3/library/os.html#os.sep
+            path = path.replace(os.sep, os.altsep)
+
+        if (is_windows_prefixed or path.startswith("/")) and LINE_SANITIZATION_PATTERN.search(trailing):
+            return None
+
+        return f"{path}:{trailing}"
+
+    # Sort the output lines so that they're deterministic
+    return sorted(filter(None, map(_sanitize_line, output_lines)))
 
 
 def main() -> None:
@@ -82,7 +123,7 @@ def main() -> None:
         allowable_errors.mypy_version = mypy.version.__version__
         needs_save = True
 
-    output_lines = result.stdout.splitlines()
+    output_lines = sanitize_output_lines(result.stdout.splitlines())
     last_line = output_lines[-1]
     output_lines = output_lines[:-1]  # Remove the last line which is just the summary
     output_lines.sort()  # Sort them as it does not look like mypy is deterministic
@@ -105,7 +146,7 @@ def main() -> None:
         print("mypykaizen: Neither success nor failure for last line:")
         print(last_line)
 
-        exit(10)  # Arbitrary but not 0, 1, or 2 (the codes I have seen used by mypy
+        exit(10)  # Arbitrary but not 0, 1, or 2 (the codes I have seen used by mypy)
 
     total_errors = int(fail_match.group("total"))
     files_in_error = int(fail_match.group("files"))
