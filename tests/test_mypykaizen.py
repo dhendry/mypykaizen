@@ -11,7 +11,7 @@ def test_sanitize_output_lines_happy_path():
         "my_lib/deadbeef.py:42: error: Deadbeef wasn't actually dead all along",
         "I'm a teapot hehe!",
     ]
-    assert mypykaizen.sanitize_output_lines(output_lines) == sorted(output_lines[1:])
+    assert mypykaizen.sanitize_output_lines(output_lines) == output_lines[1:]
 
 
 @patch("os.sep", new="\\")
@@ -22,6 +22,6 @@ def test_sanitize_output_lines_windows_machine_happy_path():
         "my_lib\\deadbeef.py:42: error: Deadbeef wasn't actually dead all along",
         "I'm a teapot hehe!",
     ]
-    assert mypykaizen.sanitize_output_lines(output_lines) == sorted(
-        [line.replace("\\", "/") for line in output_lines[1:]]
-    )
+    assert mypykaizen.sanitize_output_lines(output_lines) == [
+        line.replace("\\", "/") for line in output_lines[1:]
+    ]

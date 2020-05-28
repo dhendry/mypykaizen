@@ -85,8 +85,7 @@ def sanitize_output_lines(output_lines: List[str]) -> List[str]:
 
         return f"{path}:{trailing}"
 
-    # Sort the output lines so that they're deterministic
-    return sorted(filter(None, map(_sanitize_line, output_lines)))
+    return list(filter(None, map(_sanitize_line, output_lines)))
 
 
 def main() -> None:
