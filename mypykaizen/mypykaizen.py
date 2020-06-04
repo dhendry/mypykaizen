@@ -122,9 +122,10 @@ def main() -> None:
         allowable_errors.mypy_version = mypy.version.__version__
         needs_save = True
 
-    output_lines = sanitize_output_lines(result.stdout.splitlines())
+    output_lines = result.stdout.splitlines()
     last_line = output_lines[-1]
     output_lines = output_lines[:-1]  # Remove the last line which is just the summary
+    output_lines = sanitize_output_lines(output_lines)
     output_lines.sort()  # Sort them as it does not look like mypy is deterministic
 
     if re.match(r"^Success: .*", last_line):

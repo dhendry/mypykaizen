@@ -10,6 +10,11 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 TWINE_USERNAME := $(TWINE_USERNAME)
 TWINE_PASSWORD := $(TWINE_PASSWORD)
 
+update-pipenv:  ## Force dependencies to be updated to ensure we are always on the latest version locally
+	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
+	pipenv update --dev
+	rm -rf Pipfile.lock
+
 init: clean-lite  ## Initialize or update the local environment using pipenv.
 	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
 
@@ -53,7 +58,7 @@ format: ## Autoformat the code.
 test: ## Run tests!
 	pipenv run pytest -v tests/
 
-release: init clean-lite format typecheck git-pull ## Bump version and release
+release: update-pipenv clean-lite format typecheck git-pull ## Bump version and release
 	pipenv clean ; rm -rf Pipfile.lock
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
