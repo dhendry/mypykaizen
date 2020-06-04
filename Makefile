@@ -4,7 +4,7 @@ SHELL := /bin/bash
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
-.PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help test
+.PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help test update-pipenv
 
 .EXPORT_ALL_VARIABLES:
 TWINE_USERNAME := $(TWINE_USERNAME)
