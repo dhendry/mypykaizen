@@ -130,6 +130,7 @@ def main() -> None:
     if re.match(r"^Success: .*", last_line):
         assert result.returncode == 0, result.returncode
         print("mypykaizen: No errors!")
+        print("mypykaizen: SUCCESS")
 
         # No longer allow any errors:
         allowable_errors.total_errors = 0
@@ -231,7 +232,7 @@ def main() -> None:
     if errors_increased:
         exit(11)  # Arbitrary but not 0, 1, or 2
 
-    print("mypykaizen: DONE, but try and clean some of these problems up :)")
+    print("mypykaizen: SUCCESS, but try and clean some of these problems up :)")
     assert total_errors + files_in_error > 0  # Exit on success earlier
     exit(0)
 
