@@ -13,10 +13,19 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import mypy.version
-from dataclasses_json import dataclass_json  # type:ignore
+from dataclasses_json import dataclass_json  , config# type:ignore
 
 ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json"
 
+@dataclass_json
+@dataclass
+class MypyOutput:
+    mypy_version: Optional[str] = None
+    mypy_args: Optional[List[str]] = None
+
+    total_errors: Optional[int] = None
+    files_in_error: Optional[int] = None
+    last_full_output: Optional[List[str]] = None
 
 @dataclass_json
 @dataclass
@@ -25,6 +34,7 @@ class AllowableErrors:
 
     file_version: str = "v1"
     mypy_version: Optional[str] = None
+    mypy_args: Optional[List[str]] = None
 
     # TODO: Consider updating this to be aware of the -p parameter (what mypy is
     #  checking) and possibly other arguments as well
@@ -47,17 +57,20 @@ class AllowableErrors:
         with open(ALLOWABLE_ERRORS_FILE_NAME, "wt") as f:
             f.write(self.to_json(indent=4))
 
+def _run_mypy(mypy_args: List[str]) -> MypyOutput:
+    output = MypyOutput(
+        mypy_version=mypy.version.__version__,
+        mypy_args=mypy_args,
+    )
 
-def main() -> None:
-    # Run mypy:
     result = subprocess.run(
-        ["mypy"] + sys.argv[1:],
+        ["mypy"] + mypy_args,
         text=True,
         # Redirect input/out streams
         stdin=sys.stdin,
         stderr=sys.stderr,
         stdout=subprocess.PIPE,
-    )
+        )
 
     # Note that stderr should be redirected so we dont have to worry about that - a cleaner
     # approach would be to create a "capturing output stream" or something so sys.stdout
@@ -69,6 +82,45 @@ def main() -> None:
         # Ex: return code 2 seems to be used for when bad args are provided:
         print("mypykaizen: Not active")
         exit(result.returncode)
+
+    output_lines = result.stdout.splitlines()
+    last_line = output_lines[-1]
+    output_lines = output_lines[:-1]  # Remove the last line which is just the summary
+    output_lines.sort()  # Sort them as it does not look like mypy is deterministic
+
+    output.last_full_output = output_lines
+
+    # Is it success???
+    if re.match(r"^Success: .*", last_line):
+        # :D
+        assert result.returncode == 0, result.returncode
+        # print("mypykaizen: No errors!")
+
+        # YAYAYA
+
+        # No longer allow any errors:
+        output.total_errors = 0
+        output.files_in_error = 0
+        return output
+
+
+    fail_match = re.match(r"^Found (?P<total>\d+) errors? in (?P<files>\d+) files? .*", last_line)
+    if not fail_match:
+        # :O
+
+        print("mypykaizen: Neither success nor failure for last line:")
+        print(last_line)
+
+        exit(10)  # Arbitrary but not 0, 1, or 2 (the codes I have seen used by mypy
+
+    output.total_errors = int(fail_match.group("total"))
+    output.files_in_error = int(fail_match.group("files"))
+
+    return output
+
+def main() -> None:
+    # Run mypy:
+    mypy_args = sys.argv[1:]
 
     print()
     allowable_errors = AllowableErrors.load()
@@ -82,33 +134,33 @@ def main() -> None:
         allowable_errors.mypy_version = mypy.version.__version__
         needs_save = True
 
-    output_lines = result.stdout.splitlines()
-    last_line = output_lines[-1]
-    output_lines = output_lines[:-1]  # Remove the last line which is just the summary
-    output_lines.sort()  # Sort them as it does not look like mypy is deterministic
+    # output_lines = result.stdout.splitlines()
+    # last_line = output_lines[-1]
+    # output_lines = output_lines[:-1]  # Remove the last line which is just the summary
+    # output_lines.sort()  # Sort them as it does not look like mypy is deterministic
+    #
+    # if re.match(r"^Success: .*", last_line):
+    #     assert result.returncode == 0, result.returncode
+    #     print("mypykaizen: No errors!")
+    #
+    #     # No longer allow any errors:
+    #     allowable_errors.total_errors = 0
+    #     allowable_errors.files_in_error = 0
+    #     allowable_errors.last_full_output = output_lines
+    #     allowable_errors.save()
+    #
+    #     exit(result.returncode)
 
-    if re.match(r"^Success: .*", last_line):
-        assert result.returncode == 0, result.returncode
-        print("mypykaizen: No errors!")
-
-        # No longer allow any errors:
-        allowable_errors.total_errors = 0
-        allowable_errors.files_in_error = 0
-        allowable_errors.last_full_output = output_lines
-        allowable_errors.save()
-
-        exit(result.returncode)
-
-    fail_match = re.match(r"^Found (?P<total>\d+) errors? in (?P<files>\d+) files? .*", last_line)
-
-    if not fail_match:
-        print("mypykaizen: Neither success nor failure for last line:")
-        print(last_line)
-
-        exit(10)  # Arbitrary but not 0, 1, or 2 (the codes I have seen used by mypy
-
-    total_errors = int(fail_match.group("total"))
-    files_in_error = int(fail_match.group("files"))
+    # fail_match = re.match(r"^Found (?P<total>\d+) errors? in (?P<files>\d+) files? .*", last_line)
+    #
+    # if not fail_match:
+    #     print("mypykaizen: Neither success nor failure for last line:")
+    #     print(last_line)
+    #
+    #     exit(10)  # Arbitrary but not 0, 1, or 2 (the codes I have seen used by mypy
+    #
+    # total_errors = int(fail_match.group("total"))
+    # files_in_error = int(fail_match.group("files"))
 
     # Now check and do a comparison:
     errors_increased = False
