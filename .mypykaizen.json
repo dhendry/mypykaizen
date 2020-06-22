@@ -1,6 +1,6 @@
 {
     "file_version": "v1",
-    "mypy_version": "0.780",
+    "mypy_version": "0.781",
     "total_errors": 3,
     "files_in_error": 1,
     "last_full_output": [
