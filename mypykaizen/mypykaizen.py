@@ -120,7 +120,8 @@ def main() -> None:
         print(f"            current version is {mypy.version.__version__}")
         print()
         allowable_errors.mypy_version = mypy.version.__version__
-        needs_save = True
+
+        # Note that we are not forcing a save just when the version changes.
 
     output_lines = result.stdout.splitlines()
     last_line = output_lines[-1]
@@ -134,10 +135,17 @@ def main() -> None:
         print("mypykaizen: SUCCESS")
 
         # No longer allow any errors:
-        allowable_errors.total_errors = 0
-        allowable_errors.files_in_error = 0
-        allowable_errors.last_full_output = output_lines
-        allowable_errors.save()
+        if allowable_errors.total_errors is None or allowable_errors.total_errors != 0:
+            allowable_errors.total_errors = 0
+            needs_save = True
+        if allowable_errors.files_in_error is None or allowable_errors.files_in_error != 0:
+            allowable_errors.files_in_error = 0
+            needs_save = True
+        if allowable_errors.last_full_output is None or allowable_errors.last_full_output != output_lines:
+            allowable_errors.last_full_output = output_lines
+            needs_save = True
+        if needs_save:
+            allowable_errors.save()
 
         exit(result.returncode)
 
