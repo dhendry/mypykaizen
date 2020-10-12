@@ -3,6 +3,7 @@ Wrapper around mypy which prevents the number of typecheck errors from increasin
 but which does not force you to fix them all.
 
 Developed against mypy 0.770
+Verified to work with 0.790
 """
 import json
 import os
