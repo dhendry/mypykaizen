@@ -4,8 +4,8 @@
     "total_errors": 3,
     "files_in_error": 1,
     "last_full_output": [
-        "mypykaizen/mypykaizen.py:43: error: \"Type[AllowableErrors]\" has no attribute \"from_json\"",
-        "mypykaizen/mypykaizen.py:43: error: Returning Any from function declared to return \"AllowableErrors\"",
-        "mypykaizen/mypykaizen.py:50: error: \"AllowableErrors\" has no attribute \"to_json\""
+        "mypykaizen/mypykaizen.py:44: error: \"Type[AllowableErrors]\" has no attribute \"from_json\"",
+        "mypykaizen/mypykaizen.py:44: error: Returning Any from function declared to return \"AllowableErrors\"",
+        "mypykaizen/mypykaizen.py:51: error: \"AllowableErrors\" has no attribute \"to_json\""
     ]
 }

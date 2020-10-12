@@ -23,6 +23,7 @@ init: clean-lite  ## Initialize or update the local environment using pipenv.
 
 git-assert-clean: ## Check that there are no uncommitted changes
 	git status
+	git --no-pager diff
 	if [[ ! -z "$$(git status --porcelain)" ]] ; then echo "Git not in a clean state" && exit 1 ; fi
 
 git-pull: git-assert-clean ## Check that things are clean locally then  git pull origin master
