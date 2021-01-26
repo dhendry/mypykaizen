@@ -232,7 +232,9 @@ def main() -> None:
     # Note as coded, that this technically allows you to introduce new type errors if you
     # fix an equal number. This is largely unintentional but does make it super easy to
     # support refactoring usecases where a bunch of line numbers change
-    if not errors_increased:
+    if not errors_increased and (
+        allowable_errors.last_full_output is None or allowable_errors.last_full_output != output_lines
+    ):
         allowable_errors.last_full_output = output_lines
         needs_save = True
 
