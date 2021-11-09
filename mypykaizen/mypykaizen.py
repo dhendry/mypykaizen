@@ -14,16 +14,15 @@ from dataclasses import dataclass
 from typing import List, Optional, Pattern
 
 import mypy.version
-from dataclasses_json import dataclass_json  # type:ignore
+from dataclasses_json.api import DataClassJsonMixin
 
 ALLOWABLE_ERRORS_FILE_NAME = ".mypykaizen.json"
 LINE_SANITIZATION_PATTERN: Pattern[str] = re.compile(r"note: .* defined here$")
 WINDOWS_PATH_START: Pattern[str] = re.compile(r"^[A-Za-z]\:\\")
 
 
-@dataclass_json
 @dataclass
-class AllowableErrors:
+class AllowableErrors(DataClassJsonMixin):
     """Class to keep track of the allowable errors"""
 
     file_version: str = "v1"
@@ -90,9 +89,17 @@ def sanitize_output_lines(output_lines: List[str]) -> List[str]:
 
 
 def main() -> None:
+    _main(["mypy"])
+
+
+def dmain() -> None:
+    _main(["dmypy", "run", "--"])
+
+
+def _main(entrypoint_commands: List[str]) -> None:
     # Run mypy:
     result = subprocess.run(
-        ["mypy"] + sys.argv[1:],
+        entrypoint_commands + sys.argv[1:],
         text=True,
         # Redirect input/out streams
         stdin=sys.stdin,

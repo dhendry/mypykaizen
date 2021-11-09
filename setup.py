@@ -15,7 +15,10 @@ setup(
     long_description_content_type="text/markdown",
     platforms="any",
     zip_safe=True,
-    install_requires=["mypy>=0.761", "dataclasses-json>=0.4.1",],
+    install_requires=[
+        "mypy>=0.761",
+        "dataclasses-json>=0.4.1",
+    ],
     python_requires=">=3.7.4",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
@@ -27,7 +30,12 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    entry_points={"console_scripts": ["mypykaizen=mypykaizen.mypykaizen:main"],},
+    entry_points={
+        "console_scripts": [
+            "mypykaizen=mypykaizen.mypykaizen:main",
+            "dmypykaizen=mypykaizen.mypykaizen:dmain",
+        ],
+    },
     url="https://github.com/dhendry/mypykaizen/",
     project_urls={
         "Bug Tracker": "https://github.com/dhendry/mypykaizen/",

@@ -14,9 +14,9 @@ coverage = "*"
 pytest = "*"
 pytest-cov = "*"
 bump2version = "*"
-black = "==19.10b0"
+black = "==21.10b0"
 isort = "*"
 twine = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
