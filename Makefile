@@ -45,7 +45,6 @@ init: clean-lite  ## Initialize or update the local environment using pipenv.
 			else echo "Python version looks ok, pipenv check output: $(PIPENV_CHECK_OUTPUT)" ; \
 		fi
 
-	# Note that since this is a library, Pipfile.lock is not useful and non-dev dependencies are managed through setup.py
 	pipenv install --dev
 
 update-pipenv:  ## Force dependencies to be updated to ensure we are always on the latest version locally
