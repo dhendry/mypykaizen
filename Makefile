@@ -12,10 +12,21 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 TWINE_USERNAME := $(TWINE_USERNAME)
 TWINE_PASSWORD := $(TWINE_PASSWORD)
 
-update-pipenv:  ## Force dependencies to be updated to ensure we are always on the latest version locally
-	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
-	pipenv update --dev
-	rm -rf Pipfile.lock
+
+clean-lite: ## Lightweight clean process
+	rm -rf dist/ build/ .mypy_cache/ .pytest_cache/ .coverage
+
+	find ./ -name "*.pyc" -and -type f -and -not -path ".//.git/*" -delete
+	find ./ -name "test.log" -and -type f -and  -not -path ".//.git/*" -delete
+	find ./ -name "__pycache__" -and -type d -and -not -path ".//.git/*" -delete
+
+clean: clean-lite ## Deeper cleaning than clean-lite, includes recreating the python virtual env
+	# This will totally remove the virtual environment, you will need to run  init  after
+	# A less invasive alternative could be to just use  pipenv --clean  (which uninstalls removed packages)
+	-pipenv --rm
+
+	# git gc is really just minor tidying - https://git-scm.com/docs/git-gc
+	git gc --aggressive
 
 init: clean-lite  ## Initialize or update the local environment using pipenv.
 	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
@@ -35,34 +46,27 @@ init: clean-lite  ## Initialize or update the local environment using pipenv.
 		fi
 
 	# Note that since this is a library, Pipfile.lock is not useful and non-dev dependencies are managed through setup.py
-	pipenv install --dev --skip-lock
+	pipenv install --dev
+
+update-pipenv:  ## Force dependencies to be updated to ensure we are always on the latest version locally
+	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
+
+	@# As of Sept 2020 its WAY faster to just delete the lock file before updating (3-4x faster)
+	@# Suggestion from: https://github.com/pypa/pipenv/issues/4430#issuecomment-681631095
+	-rm Pipfile.lock
+
+	pipenv update --dev
 
 git-assert-clean: ## Check that there are no uncommitted changes
 	git status
 	git --no-pager diff
 	if [[ ! -z "$$(git status --porcelain)" ]] ; then echo "Git not in a clean state" && exit 1 ; fi
 
-git-pull: git-assert-clean ## Check that things are clean locally then  git pull origin master
+git-assert-master: ## Checks that we are on the master branch
 	if [[ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]] ; then echo "Not on master" && exit 1 ; fi
+
+git-pull: git-assert-clean git-assert-master ## Check that things are clean locally then  git pull origin master
 	git pull origin master
-
-clean-lite: ## Remove the dist directory and the Pipfile.lock since we dont use that
-	rm -rf dist/ build/
-	rm -rf Pipfile.lock
-
-clean: clean-lite ## Deeper cleaning than clean-lite, includes recreating the python virtual env
-	rm -rf dist/ build/ .mypy_cache/ .pytest_cache/ .coverage
-
-	find ./ -name "*.pyc" -and -type f -and -not -path ".//.git/*" -delete
-	find ./ -name "test.log" -and -type f -and  -not -path ".//.git/*" -delete
-	find ./ -name "__pycache__" -and -type d -and -not -path ".//.git/*" -delete
-
-	# This will totally remove the virtual environment, you will need to run  init  after
-	# A less invasive alternative could be to just use  pipenv --clean  (which uninstalls removed packages)
-	-pipenv --rm
-
-	# git gc is really just minor tidying - https://git-scm.com/docs/git-gc
-	git gc --aggressive
 
 typecheck: ## Run mypy and make sure that the types are laid out as expected
 	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run mypykaizen --strict --config-file=mypy.ini -p mypykaizen -p tests --show-error-codes --soft-error-limit=-1
@@ -78,10 +82,10 @@ format: ## Autoformat the code.
 test: ## Run tests!
 	pipenv run pytest -v tests/
 
-all-local: init update-pipenv format typecheck test  ## Everything run locally
+all-local: init format typecheck dtypecheck test  ## Everything run locally
 
-release: update-pipenv clean-lite format typecheck git-pull ## Bump version and release
-	pipenv clean ; rm -rf Pipfile.lock
+just-release: clean-lite git-assert-master git-pull ## Bump version and release (with no additional setup)
+	pipenv clean
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
 	# EX:  0.3.0-dev  ->  0.3.0
