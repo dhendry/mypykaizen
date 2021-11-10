@@ -62,8 +62,10 @@ git-assert-clean: ## Check that there are no uncommitted changes
 	git --no-pager diff
 	if [[ ! -z "$$(git status --porcelain)" ]] ; then echo "Git not in a clean state" && exit 1 ; fi
 
-git-pull: git-assert-clean ## Check that things are clean locally then  git pull origin master
+git-assert-master: ## Checks that we are on the master branch
 	if [[ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]] ; then echo "Not on master" && exit 1 ; fi
+
+git-pull: git-assert-clean git-assert-master ## Check that things are clean locally then  git pull origin master
 	git pull origin master
 
 typecheck: ## Run mypy and make sure that the types are laid out as expected
@@ -80,9 +82,9 @@ format: ## Autoformat the code.
 test: ## Run tests!
 	pipenv run pytest -v tests/
 
-all-local: init update-pipenv format typecheck dtypecheck test  ## Everything run locally
+all-local: init format typecheck dtypecheck test  ## Everything run locally
 
-just-release: clean-lite git-pull ## Bump version and release (with no additional setup)
+just-release: clean-lite git-assert-master git-pull ## Bump version and release (with no additional setup)
 	pipenv clean
 
 	# Strip the -dev from the version (this will also 'git commit' and 'git tag')
