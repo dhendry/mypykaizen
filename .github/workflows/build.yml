@@ -25,14 +25,32 @@ jobs:
       with:
         python-version: 3.8
 
-    - uses: actions/cache@v2
+    # Pip cache
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+    - name: pip cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('.github/workflows/*') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install pip dependencies
+      run: |
+        python -m pip install --upgrade pip pipenv
+
+    # Pipenv cache
+    - name: Pipenv cache
+      uses: actions/cache@v2
       with:
         path: ~/.local/share/virtualenvs
         key: ${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-pipenv-${{ hashFiles('Pipfile.lock') }}
 
-    - name: Install dependencies
+    - name: Install repo dependencies
       run: |
-        python -m pip install --upgrade pip pipenv
         make init
 
     - name: Format
