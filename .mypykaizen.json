@@ -1,11 +1,7 @@
 {
     "file_version": "v1",
-    "mypy_version": "0.790",
-    "total_errors": 3,
-    "files_in_error": 1,
-    "last_full_output": [
-        "mypykaizen/mypykaizen.py:44: error: \"Type[AllowableErrors]\" has no attribute \"from_json\"",
-        "mypykaizen/mypykaizen.py:44: error: Returning Any from function declared to return \"AllowableErrors\"",
-        "mypykaizen/mypykaizen.py:51: error: \"AllowableErrors\" has no attribute \"to_json\""
-    ]
+    "mypy_version": "0.910",
+    "total_errors": 0,
+    "files_in_error": 0,
+    "last_full_output": []
 }

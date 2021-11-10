@@ -49,7 +49,10 @@ clean: clean-lite ## Deeper cleaning than clean-lite, includes recreating the py
 	git gc --aggressive
 
 typecheck: ## Run mypy and make sure that the ad-engine types are laid out as expected
-	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run mypykaizen --strict --config-file=mypy.ini -p mypykaizen
+	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run mypykaizen --strict --config-file=mypy.ini -p mypykaizen --show-error-codes --soft-error-limit=-1
+
+dtypecheck: ## Run mypy and make sure that the ad-engine types are laid out as expected
+	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run dmypykaizen --strict --config-file=mypy.ini -p mypykaizen --show-error-codes --soft-error-limit=-1
 
 format: ## Autoformat the code.
 	@# https://github.com/timothycrosley/isort/issues/725
