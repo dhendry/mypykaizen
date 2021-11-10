@@ -57,6 +57,13 @@ def sanitize_output_lines(output_lines: List[str]) -> List[str]:
     """
 
     def _sanitize_line(line: str) -> Optional[str]:
+        # Mostly defensive:
+        line = line.strip()
+
+        # Handle running in daemon mode
+        if line.lower() == "Daemon started".lower():
+            return None
+
         is_windows_prefixed = bool(WINDOWS_PATH_START.match(line))
         if is_windows_prefixed:
             splitline = line.split(":", maxsplit=2)
@@ -93,6 +100,9 @@ def main() -> None:
 
 
 def dmain() -> None:
+    """
+    Daemon mode - can be WAY faster
+    """
     _main(["dmypy", "run", "--"])
 
 

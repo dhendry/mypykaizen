@@ -5,7 +5,7 @@ import pytest
 from mypykaizen import mypykaizen
 
 
-def test_sanitize_output_lines_happy_path():
+def test_sanitize_output_lines_happy_path() -> None:
     output_lines = [
         '/Users/foobar/baz.pyi:00: note: "this" of "that" defined here',
         "my_lib/deadbeef.py:42: error: Deadbeef wasn't actually dead all along",
@@ -16,7 +16,7 @@ def test_sanitize_output_lines_happy_path():
 
 @patch("os.sep", new="\\")
 @patch("os.altsep", new="/")
-def test_sanitize_output_lines_windows_machine_happy_path():
+def test_sanitize_output_lines_windows_machine_happy_path() -> None:
     output_lines = [
         'C:\\Users\\foobar\\baz.pyi:00: note: "this" of "that" defined here',
         "my_lib\\deadbeef.py:42: error: Deadbeef wasn't actually dead all along",
@@ -25,3 +25,10 @@ def test_sanitize_output_lines_windows_machine_happy_path():
     assert mypykaizen.sanitize_output_lines(output_lines) == [
         line.replace("\\", "/") for line in output_lines[1:]
     ]
+
+
+def test_sanitize_output_daemon() -> None:
+    output_lines = [
+        "Daemon started",
+    ]
+    assert mypykaizen.sanitize_output_lines(output_lines) == []

@@ -1,7 +1,12 @@
 {
     "file_version": "v1",
     "mypy_version": "0.910",
-    "total_errors": 0,
-    "files_in_error": 0,
-    "last_full_output": []
+    "total_errors": 4,
+    "files_in_error": 1,
+    "last_full_output": [
+        "tests/deliberately_failing_typechecks.py:3: error: Incompatible types in assignment (expression has type \"None\", variable has type \"int\")  [assignment]",
+        "tests/deliberately_failing_typechecks.py:4: error: Incompatible types in assignment (expression has type \"float\", variable has type \"int\")  [assignment]",
+        "tests/deliberately_failing_typechecks.py:5: error: Incompatible types in assignment (expression has type \"str\", variable has type \"int\")  [assignment]",
+        "tests/deliberately_failing_typechecks.py:8: error: Function is missing a return type annotation  [no-untyped-def]"
+    ]
 }

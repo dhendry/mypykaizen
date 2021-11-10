@@ -4,7 +4,9 @@ SHELL := /bin/bash
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
-.PHONY: init git-assert-clean git-pull clean-lite clean typecheck format release help test update-pipenv all-local
+# .PHONY to ensure no filenames collide with targets in this file
+.PHONY: $(shell awk 'BEGIN {FS = ":"} /^[^ .:]+:/ {printf "%s ", $$1}' $(THIS_FILE))
+
 
 .EXPORT_ALL_VARIABLES:
 TWINE_USERNAME := $(TWINE_USERNAME)
@@ -62,11 +64,11 @@ clean: clean-lite ## Deeper cleaning than clean-lite, includes recreating the py
 	# git gc is really just minor tidying - https://git-scm.com/docs/git-gc
 	git gc --aggressive
 
-typecheck: ## Run mypy and make sure that the ad-engine types are laid out as expected
-	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run mypykaizen --strict --config-file=mypy.ini -p mypykaizen --show-error-codes --soft-error-limit=-1
+typecheck: ## Run mypy and make sure that the types are laid out as expected
+	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run mypykaizen --strict --config-file=mypy.ini -p mypykaizen -p tests --show-error-codes --soft-error-limit=-1
 
-dtypecheck: ## Run mypy and make sure that the ad-engine types are laid out as expected
-	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run dmypykaizen --strict --config-file=mypy.ini -p mypykaizen --show-error-codes --soft-error-limit=-1
+dtypecheck: ## Run mypy and make sure that the types are laid out as expected -  daemon mode! (faster when running multiple times)
+	env MYPYPATH="$(shell ls -d $$(pipenv --venv)/src/* | paste -sd ':' -)" pipenv run dmypykaizen --strict --config-file=mypy.ini -p mypykaizen -p tests --show-error-codes --soft-error-limit=-1
 
 format: ## Autoformat the code.
 	@# https://github.com/timothycrosley/isort/issues/725
