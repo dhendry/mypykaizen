@@ -32,3 +32,14 @@ def test_sanitize_output_daemon() -> None:
         "Daemon started",
     ]
     assert mypykaizen.sanitize_output_lines(output_lines) == []
+
+
+def test_sanitize_output_daemon_restarting() -> None:
+    output_lines = [
+        "Daemon stopped",
+        "Restarting: configuration changed",
+        "my_lib/deadbeef.py:42: error: Deadbeef wasn't actually dead all along",
+    ]
+    assert mypykaizen.sanitize_output_lines(output_lines) == [
+        "my_lib/deadbeef.py:42: error: Deadbeef wasn't actually dead all along",
+    ]

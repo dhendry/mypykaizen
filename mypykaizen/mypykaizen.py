@@ -61,7 +61,7 @@ def sanitize_output_lines(output_lines: List[str]) -> List[str]:
         line = line.strip()
 
         # Handle running in daemon mode
-        if line.lower() == "Daemon started".lower():
+        if line.startswith("Daemon ") or line.startswith("Restarting: "):
             return None
 
         is_windows_prefixed = bool(WINDOWS_PATH_START.match(line))
