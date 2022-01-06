@@ -87,7 +87,14 @@ def sanitize_output_lines(output_lines: List[str]) -> List[str]:
             # For reference: https://docs.python.org/3/library/os.html#os.sep
             path = path.replace(os.sep, os.altsep)
 
-        if (is_windows_prefixed or path.startswith("/")) and LINE_SANITIZATION_PATTERN.search(trailing):
+        # Heuristic checks to see if we are referencing something in the virtual env for some reason
+        if (
+            is_windows_prefixed
+            or path.startswith("/")
+            # SUPER HACKY: heuristic that virtual environments in the current folder start with a . but
+            # modules and the code we are checking does not.
+            or path.startswith(".")
+        ) and LINE_SANITIZATION_PATTERN.search(trailing):
             return None
 
         return f"{path}:{trailing}"
