@@ -12,6 +12,8 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 TWINE_USERNAME := $(TWINE_USERNAME)
 TWINE_PASSWORD := $(TWINE_PASSWORD)
 
+# Grab the python version from the Pipfile
+PYTHON_VERSION := $$(grep "python_version" Pipfile | cut -d'=' -f2 | xargs)
 
 clean-lite: ## Lightweight clean process
 	rm -rf dist/ build/ .mypy_cache/ .pytest_cache/ .coverage
@@ -30,20 +32,23 @@ clean: clean-lite ## Deeper cleaning than clean-lite, includes recreating the py
 
 init: clean-lite  ## Initialize or update the local environment using pipenv.
 	@command -v pipenv >/dev/null 2>&1  || echo "Pipenv not installed, please install with  brew install pipenv  or appropriate"
+	@if [[ "$$(pipenv --version  | rev | cut -d' ' -f1 | rev)" < "2020" ]] ; then echo "$$(pipenv --version) out of date! Please update to at least pipenv 2020.6.2" ; exit 1 ; fi
 
 	@# Check for the right version of python and if it does NOT exist, remove the virtualenv so it gets re-created.
-	@# This whole control flow is kinda insane -> yay embedding bash in make (exit code of 32 here is arbitrary)
-	$(eval PIPENV_CHECK_OUTPUT := $(shell pipenv check 2>&1 ))
-	@echo "$(PIPENV_CHECK_OUTPUT)" | grep "python_version does not match" \
-		&& ( \
-			echo "Python version has changed, going to remove current virtual environment" \
-			&& (pipenv --rm || echo "No pipenv to remove") \
-			&& pipenv run pip install --upgrade pip setuptools \
-			|| ( echo "Installing new venv failed! Maybe you need to use pyenv to install a compatible python?" && exit 32 ) \
-		) || if [[ "$$?" == "32" ]] ; \
-			then exit 32 ; \
-			else echo "Python version looks ok, pipenv check output: $(PIPENV_CHECK_OUTPUT)" ; \
-		fi
+	@if pipenv --venv >/dev/null 2>&1 ; then \
+		VENV_PYTHON_VERSION=$$(pipenv run python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo ""); \
+		if [[ -n "$$VENV_PYTHON_VERSION" ]] && [[ "$$VENV_PYTHON_VERSION" != "$(PYTHON_VERSION)" ]] ; then \
+			echo "Python version mismatch: venv has $$VENV_PYTHON_VERSION but Pipfile requires $(PYTHON_VERSION)" ; \
+			echo "Going to remove current virtual environment" ; \
+			pipenv --rm || echo "No pipenv to remove" ; \
+			pipenv run pip install --upgrade pip setuptools \
+				|| ( echo "Installing new venv failed! Maybe you need to use pyenv to install a compatible python?" && exit 32 ) ; \
+		else \
+			echo "Python version looks ok: $(PYTHON_VERSION)" ; \
+		fi ; \
+	else \
+		echo "No virtual environment detected, will create one with Python $(PYTHON_VERSION)" ; \
+	fi
 
 	pipenv install --dev
 
